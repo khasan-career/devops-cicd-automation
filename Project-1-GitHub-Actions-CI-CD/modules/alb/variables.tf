@@ -1,4 +1,3 @@
-## main.tf - root module wiring. Calls modules/* and passes variables/outputs between modules.
 resource "aws_lb" "app" {
   name               = "ci-cd-alb"
   load_balancer_type = "application"

@@ -2,6 +2,7 @@ terraform {
   backend "s3" {}
 }
 
+# load root variables automatically from parent - using module call here
 module "vpc" {
   source          = "../../modules/vpc"
   vpc_cidr        = var.vpc_cidr

@@ -2,6 +2,7 @@
 
 # Root outputs
 output "alb_dns" {
-  description = "Load Balancer DNS"
+  description = "ALB DNS name"
   value       = module.alb.alb_dns_name
+  depends_on  = [module.alb]
 }
