@@ -12,26 +12,20 @@ module "vpc" {
   private_subnet_cidrs = var.private_subnet_cidrs
 }
 
-# Application -- Web tier (public) - simple EC2 instances.
-module "web" {
-  source         = "./modules/web"
-  project_name   = var.project_name
-  environment    = var.environment
-  subnet_ids     = module.vpc.public_subnet_ids
-  instance_count = var.web_instance_count
-  instance_type  = var.instance_type
-  instance_ami   = var.instance_ami
+# Call Security Module (for SGs)
+module "security" {
+  source = "../../modules/security"
+  vpc_id = module.vpc.vpc_id
 }
 
-# Application -- App tier (private) - simple EC2 instances.
-module "app" {
-  source         = "./modules/app"
-  project_name   = var.project_name
-  environment    = var.environment
-  subnet_ids     = module.vpc.private_subnet_ids
-  instance_count = var.app_instance_count
-  instance_type  = var.instance_type
-  instance_ami   = var.instance_ami
+# Call EC2 Module (Web/App Servers)
+module "ec2" {
+  source = "../../modules/ec2"
+  vpc_id             = module.vpc.vpc_id
+  public_subnet_ids  = module.vpc.public_subnet_ids
+  security_group_ids = [module.security.web_sg_id]
+  instance_type      = var.ec2_instance_type
+  key_name           = var.key_name
 }
 
 # ALB - placed in public subnets.
