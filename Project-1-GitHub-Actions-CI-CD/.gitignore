@@ -1,0 +1,28 @@
+# Terraform working directories
+**/.terraform/*
+**/.terraform.lock.hcl
+
+# Local environment overrides
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Sensitive and local files
+terraform.tfvars
+*.tfvars.json
+*.tfplan
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Ignore provider binaries
+*.exe
+
+**/.terraform/*
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
