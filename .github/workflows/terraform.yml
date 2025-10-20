@@ -1,17 +1,23 @@
 name: Terraform CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      action:
+        description: "Select the Terraform action to perform"
+        required: true
+        default: "plan"
+        type: choice
+        options:
+          - plan
+          - apply
 
 env:
   AWS_REGION: us-east-2
   TF_WORKING_DIR: Project-1-GitHub-Actions-CI-CD/environments/dev
 
 jobs:
-  terraform-plan:
+  terraform:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,48 +34,37 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      # 🧹 Optional: Clean up old locks
+      - name: Cleanup stale Terraform lock
+        run: |
+          echo "Checking for existing DynamoDB lock..."
+          LOCK_ID=$(aws dynamodb scan --table-name terraform-lock-table \
+            --query "Items[0].LockID.S" --output text 2>/dev/null)
+          if [ "$LOCK_ID" != "None" ] && [ -n "$LOCK_ID" ]; then
+            echo "Found lock $LOCK_ID — removing it..."
+            terraform force-unlock -force "$LOCK_ID" || true
+          else
+            echo "No lock found."
+          fi
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
 
       - run: terraform init -reconfigure
       - run: terraform validate
 
-      # ✅ FIXED: add the DB password secret here
+      # 🧩 Run Terraform PLAN or APPLY based on input
       - name: Terraform Plan
-        run: terraform plan -out=tfplan -input=false
+        if: github.event.inputs.action == 'plan'
+        run: terraform plan -lock-timeout=5m -out=tfplan -input=false
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: tfplan
-          path: tfplan
-
-  terraform-apply:
-    needs: terraform-plan
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.TF_WORKING_DIR }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.13.4
-
-      - uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: tfplan
-          path: .
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        if: github.event.inputs.action == 'apply'
+        run: terraform apply -lock-timeout=5m -auto-approve
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-
