@@ -1,15 +1,17 @@
 name: Terraform CI/CD Pipeline
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       action:
         description: "Select the Terraform action to perform"
         required: true
-        default: "plan"
+        default: "apply"
         type: choice
         options:
-          - plan
           - apply
 
 env:
@@ -17,7 +19,8 @@ env:
   TF_WORKING_DIR: Project-1-GitHub-Actions-CI-CD/environments/dev
 
 jobs:
-  terraform:
+  terraform-plan:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -35,7 +38,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 🧹 Optional: Clean up old locks
       - name: Cleanup stale Terraform lock
         run: |
           echo "Checking for existing DynamoDB lock..."
@@ -56,15 +58,42 @@ jobs:
       - run: terraform init -reconfigure
       - run: terraform validate
 
-      # 🧩 Run Terraform PLAN or APPLY based on input
       - name: Terraform Plan
-        if: github.event.inputs.action == 'plan'
         run: terraform plan -lock-timeout=5m -out=tfplan -input=false
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.TF_WORKING_DIR }}/tfplan
+
+
+  terraform-apply:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.TF_WORKING_DIR }}
+
       - name: Terraform Apply
-        if: github.event.inputs.action == 'apply'
-        run: terraform apply -lock-timeout=5m -auto-approve
+        run: terraform apply -lock-timeout=5m -auto-approve tfplan
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
