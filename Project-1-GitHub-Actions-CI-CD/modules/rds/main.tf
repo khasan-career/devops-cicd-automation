@@ -37,7 +37,7 @@ resource "aws_db_subnet_group" "default" {
 resource "aws_db_instance" "this" {
   identifier              = "project1-db"
   engine                  = "mysql"
-  instance_class          = "db.t3.micro"
+  instance_class          = "db.t4g.micro"
   allocated_storage       = 20
   username                = "adminuser"
   password                = var.db_password
