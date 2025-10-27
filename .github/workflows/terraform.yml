@@ -1,0 +1,54 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Select Terraform action"
+        required: true
+        default: "apply"
+        type: choice
+        options: [ apply ]
+
+env:
+  AWS_REGION: us-east-2
+  TF_WORKING_DIR: Project-1-GitHub-Actions-CI-CD/environments/dev
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform init -reconfigure
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan / Apply
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "Running Terraform plan..."
+            terraform plan -out=tfplan -input=false
+          elif [ "${{ github.event.inputs.action }}" == "apply" ]; then
+            echo "Running Terraform apply..."
+            terraform plan -out=tfplan -input=false
+            terraform apply -auto-approve tfplan
+          fi
+        env:
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
