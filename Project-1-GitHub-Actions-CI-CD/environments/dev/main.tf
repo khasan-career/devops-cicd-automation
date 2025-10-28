@@ -14,10 +14,11 @@ module "ec2" {
 }
 
 module "alb" {
-  source            = "../../modules/alb"
-  vpc_id            = module.vpc.vpc_id
-  alb_sg_id         = module.security.alb_sg_id
-  public_subnet_ids = module.vpc.public_subnet_ids
+  source             = "../../modules/alb"
+  vpc_id             = module.vpc.vpc_id
+  alb_sg_id          = module.security.alb_sg_id
+  public_subnet_ids  = module.vpc.public_subnet_ids
+  instance_id        = module.ec2.ec2_id     # ✅ new line
 }
 
 module "rds" {
