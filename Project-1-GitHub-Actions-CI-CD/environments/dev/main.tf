@@ -24,10 +24,9 @@ module "rds" {
   source      = "../../modules/rds"
   vpc_id      = module.vpc.vpc_id
   web_sg_id   = module.security.web_sg_id
-  subnet_ids  = module.vpc.public_subnet_ids    # or private_subnet_ids if you have them
+  subnet_ids  = module.vpc.public_subnet_ids
   db_password = var.db_password
 }
-
 
 # Allow EC2 to connect to RDS on port 3306
 resource "aws_security_group_rule" "rds_inbound" {
