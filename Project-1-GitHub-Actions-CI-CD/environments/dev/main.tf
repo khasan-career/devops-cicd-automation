@@ -8,10 +8,11 @@ module "security" {
 }
 
 module "ec2" {
-  source            = "../../modules/ec2"
-  public_subnet_ids = module.vpc.public_subnet_ids
-  web_sg_id         = module.security.web_sg_id
+  source     = "../../modules/ec2"
+  subnet_id  = element(module.vpc.public_subnet_ids, 0)  # ✅ take first public subnet
+  web_sg_id  = module.security.web_sg_id
 }
+
 
 module "alb" {
   source             = "../../modules/alb"
