@@ -28,12 +28,3 @@ module "rds" {
   db_password = var.db_password
 }
 
-# Allow EC2 to connect to RDS on port 3306
-resource "aws_security_group_rule" "rds_inbound" {
-  type                     = "ingress"
-  from_port                = 3306
-  to_port                  = 3306
-  protocol                 = "tcp"
-  source_security_group_id = module.security.web_sg_id
-  security_group_id        = module.rds.rds_sg_id
-}
