@@ -22,8 +22,9 @@ module "alb" {
 
 module "rds" {
   source      = "../../modules/rds"
-  web_sg_id   = module.security.web_sg_id
-  subnet_ids  = module.vpc.public_subnet_ids
+  vpc_id      = module.vpc.vpc_id               # ← pass vpc_id here
+  web_sg_id   = module.security.web_sg_id      # ← ensure this output exists in security module
+  subnet_ids  = module.vpc.public_subnet_ids   # or private_subnet_ids (prefer private)
   db_password = var.db_password
 }
 
