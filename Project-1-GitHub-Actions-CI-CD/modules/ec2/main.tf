@@ -53,4 +53,10 @@ resource "aws_instance" "web" {
   tags = {
     Name = "github-actions-web-instance"
   }
+
+ # Ensures Terraform replaces instance automatically when type changes
+  lifecycle {
+    create_before_destroy = true
+  }
+
 }
