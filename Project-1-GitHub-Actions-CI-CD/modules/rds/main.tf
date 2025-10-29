@@ -47,6 +47,6 @@ resource "aws_db_instance" "this" {
   publicly_accessible     = false
   deletion_protection     = false
   tags = {
-    Name = "project1-db-instance"
+    Name = "github-actions-db-instance"
   }
 }

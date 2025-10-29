@@ -51,6 +51,6 @@ resource "aws_instance" "web" {
   EOF
 
   tags = {
-    Name = "project1-web-instance"
+    Name = "github-actions-web-instance"
   }
 }
