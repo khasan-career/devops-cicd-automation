@@ -1,0 +1,63 @@
+# ==========================================================
+# Terraform .gitignore (AWS + GitHub Actions Best Practice)
+# ==========================================================
+
+# Local Terraform directories and state
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+
+# Ignore environment-specific state files
+*.tfstate
+*.tfstate.backup
+*.tfplan
+
+# Ignore crash logs
+crash.log
+crash.*.log
+
+# Ignore private credentials and secrets
+*.pem
+*.key
+*.p12
+*.crt
+*.csr
+*.der
+*.ovpn
+
+# Local override files (for testing)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore sensitive Terraform variable files
+*.auto.tfvars
+terraform.tfvars
+
+# Ignore IDE/editor configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*.DS_Store
+
+# Ignore Python virtual environments if used for scripts
+venv/
+__pycache__/
+
+# Ignore backend credentials if generated dynamically
+backend.hcl
+
+# Ignore GitHub Action artifacts
+*.zip
+*.tar.gz
+
+# Ignore Terraform plan output artifacts
+tfplan*
+plan.out
+
+# Ignore temp or local helper files
+tmp/
+logs/

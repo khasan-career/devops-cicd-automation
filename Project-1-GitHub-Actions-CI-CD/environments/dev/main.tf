@@ -11,6 +11,7 @@ module "ec2" {
   source     = "../../modules/ec2"
   subnet_id  = element(module.vpc.public_subnet_ids, 0)  # ✅ take first public subnet
   web_sg_id  = module.security.web_sg_id
+  key_name   = var.key_name
 }
 
 

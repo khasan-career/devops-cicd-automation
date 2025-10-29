@@ -1,7 +1,7 @@
 variable "ami_id" {
   description = "AMI ID for EC2 instance"
   type        = string
-  default     = "ami-0c55b159cbfafe1f0" # Amazon Linux 2 (us-east-2)
+  default     = "ami-0807bd3aff0ae7273" # Amazon Linux 2 (us-east-2)
 }
 
 variable "instance_type" {
@@ -20,12 +20,18 @@ variable "web_sg_id" {
   type        = string
 }
 
+variable "key_name" {
+  description = "EC2 Key Pair name to use for SSH access"
+  type        = string
+}
+
 resource "aws_instance" "web" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.web_sg_id]
   associate_public_ip_address = true
+  key_name               = var.key_name
 
   user_data = <<-EOF
     #!/bin/bash
