@@ -14,7 +14,6 @@ module "ec2" {
   key_name   = var.key_name
 }
 
-
 module "alb" {
   source             = "../../modules/alb"
   vpc_id             = module.vpc.vpc_id
