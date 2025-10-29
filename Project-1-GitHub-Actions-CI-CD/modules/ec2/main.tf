@@ -33,13 +33,21 @@ resource "aws_instance" "web" {
   associate_public_ip_address = true
   key_name               = var.key_name
 
+  user_data_replace_on_change = true
+
   user_data = <<-EOF
     #!/bin/bash
-    sudo yum update -y
-    sudo amazon-linux-extras install nginx1 -y
-    sudo systemctl enable nginx
-    sudo systemctl start nginx
-    echo "<h1>Terraform + GitHub Actions Deployment Successful!</h1>" > /usr/share/nginx/html/index.html
+    exec > /var/log/user-data.log 2>&1
+    echo "=== Starting user data script for Amazon Linux 2023 ==="
+
+    dnf update -y
+    dnf install -y nginx
+    systemctl enable nginx
+    systemctl start nginx
+    mkdir -p /usr/share/nginx/html
+    echo "<h1>Terraform + GitHub Actions Deployment Successful (Amazon Linux 2023)</h1>" > /usr/share/nginx/html/index.html
+
+    echo "=== Completed user data script ==="
   EOF
 
   tags = {
